@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nutri AI | Precision Lab</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root { --neon: #00f2fe; --accent: #4facfe; --bg: #050810; --glass: rgba(255,255,255,0.03); --border: rgba(255,255,255,0.1); }
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; transition: all 0.3s ease; }
+        body { margin: 0; background: var(--bg); height: 100vh; display: flex; justify-content: center; align-items: center; color: white; overflow: hidden; }
+
+        .app-shell {
+            width: 420px; height: 880px; max-height: 96vh;
+            background: radial-gradient(circle at top right, #1e293b, #050810);
+            border: 1px solid var(--border); border-radius: 50px;
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.8); position: relative;
+        }
+
+        .nav-header { position: absolute; top: 40px; left: 0; width: 100%; padding: 0 35px; z-index: 100; }
+        .back-btn { font-size: 1.2rem; color: var(--accent); cursor: pointer; display: none; }
+
+        .page { display: none; padding: 100px 30px 40px; height: 100%; flex-direction: column; overflow-y: auto; scrollbar-width: none; }
+        .page.active { display: flex; animation: fadeIn 0.5s forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        h1 { font-size: 2.2rem; font-weight: 800; margin: 10px 0; background: linear-gradient(to right, #fff, var(--neon)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { color: #64748b; font-size: 0.85rem; margin-bottom: 25px; line-height: 1.4; }
+
+        .input-group { position: relative; margin-bottom: 15px; }
+        .input-group i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--accent); }
+        input { width: 100%; padding: 18px 18px 18px 45px; border-radius: 18px; border: 1px solid var(--border); background: var(--glass); color: white; outline: none; }
+
+        .btn { background: white; color: black; border: none; padding: 20px; border-radius: 20px; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 10px; }
+        
+        .cat-label { font-size: 0.65rem; font-weight: 900; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; margin: 25px 0 10px; display: block; border-bottom: 1px solid rgba(0, 242, 254, 0.1); padding-bottom: 4px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .card { background: var(--glass); border: 1px solid var(--border); border-radius: 15px; padding: 12px; text-align: center; cursor: pointer; font-size: 0.75rem; }
+        .card.selected { background: var(--neon); color: black; font-weight: 700; border-color: white; }
+
+        .scanner-container { position: relative; width: 100%; height: 320px; background: #000; border-radius: 30px; border: 1px solid var(--border); overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+        .viewfinder-corners { position: absolute; width: 80%; height: 70%; border: 2px solid rgba(0, 242, 254, 0.3); border-radius: 15px; z-index: 2; }
+        .scanner-line { position: absolute; width: 100%; height: 2px; background: var(--neon); top: 0; box-shadow: 0 0 15px var(--neon); z-index: 3; display: none; animation: scanMove 2s linear infinite; }
+        @keyframes scanMove { 0% { top: 0; } 100% { top: 100%; } }
+
+        .recipe-box { border-left: 2px solid var(--neon); padding: 15px; margin-bottom: 25px; background: rgba(255,255,255,0.02); border-radius: 0 15px 15px 0; }
+        .report-card { background: var(--glass); border: 1px solid var(--border); border-radius: 25px; padding: 20px; }
+        .stat-line { display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; }
+        .val { color: var(--neon); font-weight: 900; }
+    </style>
+</head>
+<body>
+
+<div class="app-shell">
+    <div class="nav-header"><div class="back-btn" id="backBtn" onclick="prevPage()"><i class="fas fa-arrow-left"></i></div></div>
+
+    <div class="page active" id="p1">
+        <div style="margin-top: 60px;">
+            <i class="fas fa-microchip" style="font-size: 3.5rem; color: var(--neon); margin-bottom: 20px;"></i>
+            <h1 style="-webkit-text-fill-color: initial; background: none; color: white; margin-bottom:0;">Nutri AI</h1>
+            <h1 style="margin-top:0;">Precision Lab</h1>
+            <p class="subtitle">Autonomous metabolic tracking and recipe synchronization.</p>
+        </div>
+        <button class="btn" style="margin-top: auto;" onclick="nextPage(2)">Initialize System</button>
+    </div>
+
+    <div class="page" id="p2">
+        <h1>Identification</h1>
+        <p class="subtitle">Access your encrypted bio-vault to continue.</p>
+        <button class="btn" onclick="nextPage(3)">Sign In</button>
+        <button class="btn" style="background:transparent; border:1px solid var(--border); color:white; margin-top:15px;" onclick="nextPage(4)">Create Account</button>
+    </div>
+
+    <div class="page" id="p3">
+        <h1>Welcome Back</h1>
+        <div class="input-group"><i class="fas fa-envelope"></i><input type="email" id="lEmail" placeholder="Email Address"></div>
+        <div class="input-group"><i class="fas fa-lock"></i><input type="password" id="lPass" placeholder="Password"></div>
+        <button class="btn" style="width:100%" onclick="handleLogin()">Authorize Access</button>
+    </div>
+
+    <div class="page" id="p4">
+        <h1>New Profile</h1>
+        <div class="input-group"><i class="fas fa-user"></i><input type="text" id="rName" placeholder="Full Name"></div>
+        <div class="input-group"><i class="fas fa-envelope"></i><input type="email" id="rEmail" placeholder="Email Address"></div>
+        <div class="input-group"><i class="fas fa-lock"></i><input type="password" id="rPass" placeholder="Set Password"></div>
+        <button class="btn" style="width:100%" onclick="handleRegister()">Register Bio-Data</button>
+    </div>
+
+    <div class="page" id="p6">
+        <h1>Vitals</h1>
+        <p class="subtitle">Current physiological baseline required.</p>
+        <div class="input-group"><i class="fas fa-ruler-vertical"></i><input type="number" id="vH" placeholder="Height (cm)"></div>
+        <div class="input-group"><i class="fas fa-weight-hanging"></i><input type="number" id="vW" placeholder="Weight (kg)"></div>
+        <div class="input-group"><i class="fas fa-calendar"></i><input type="number" id="vA" placeholder="Age"></div>
+        <button class="btn" style="width:100%" onclick="validateVitals()">Sync Metrics</button>
+    </div>
+
+    <div class="page" id="p7">
+        <h1>Objectives</h1>
+        <span class="cat-label">Performance</span>
+        <div class="grid"><div class="card" onclick="toggleSel(this)">Fat Loss</div><div class="card" onclick="toggleSel(this)">Muscle Gain</div><div class="card" onclick="toggleSel(this)">Explosive Power</div><div class="card" onclick="toggleSel(this)">Endurance</div><div class="card" onclick="toggleSel(this)">Flexibility</div></div>
+        <span class="cat-label">Cognitive</span>
+        <div class="grid"><div class="card" onclick="toggleSel(this)">Deep Focus</div><div class="card" onclick="toggleSel(this)">Memory</div><div class="card" onclick="toggleSel(this)">Stress Relief</div><div class="card" onclick="toggleSel(this)">Mental Clarity</div><div class="card" onclick="toggleSel(this)">Creativity</div></div>
+        <span class="cat-label">Longevity</span>
+        <div class="grid"><div class="card" onclick="toggleSel(this)">Gut Health</div><div class="card" onclick="toggleSel(this)">Detox</div><div class="card" onclick="toggleSel(this)">Immunity</div><div class="card" onclick="toggleSel(this)">Skin Glow</div><div class="card" onclick="toggleSel(this)">Anti-Aging</div></div>
+        <span class="cat-label">Recovery</span>
+        <div class="grid"><div class="card" onclick="toggleSel(this)">Deep Sleep</div><div class="card" onclick="toggleSel(this)">Alertness</div><div class="card" onclick="toggleSel(this)">Stability</div></div>
+        <button class="btn" style="margin-top:30px; width:100%" onclick="validateSelectionAndNext('#p7 .card.selected', 8)">Set Strategy</button>
+    </div>
+
+    <div class="page" id="p8">
+        <h1>Inventory</h1>
+        <div id="foodMatrix"></div>
+        <button class="btn" style="margin-top:20px; width:100%" onclick="genDetailedRecipes()">Analyze Ingredients</button>
+    </div>
+
+    <div class="page" id="p9">
+        <h1>Recipe Protocols</h1>
+        <div id="recipeContainer"></div>
+        <button class="btn" onclick="nextPage(10)">Scan Finished Meal</button>
+    </div>
+
+    <div class="page" id="p10">
+        <h1>Macro Scan</h1>
+        <div class="scanner-container" onclick="document.getElementById('mF').click()">
+            <div class="viewfinder-corners"></div>
+            <div class="scanner-line" id="sLine"></div>
+            <i class="fas fa-camera" id="cIcon" style="font-size:3rem; color:var(--accent)"></i>
+            <img id="pImg" style="width:100%; height:100%; object-fit:cover; display:none;">
+            <input type="file" id="mF" accept="image/*" style="display:none" onchange="previewImage(this)">
+        </div>
+        <button class="btn" id="aBtn" style="margin-top: auto; opacity:0.5" disabled onclick="startAnalysis()">Generate Bio-Report</button>
+    </div>
+
+    <div class="page" id="p11">
+        <h1>Daily Report</h1>
+        <div class="report-card">
+            <div class="stat-line"><span>Total Calories</span><span class="val" id="rCal">--</span></div>
+            <div class="stat-line"><span>Protein</span><span class="val" id="rPro">--</span></div>
+            <div class="stat-line"><span>Lipids (Fats)</span><span class="val" id="rFat">--</span></div>
+            <div class="stat-line"><span>Glucose (Carbs)</span><span class="val" id="rCarb">--</span></div>
+        </div>
+        <button class="btn" style="background:transparent; border:1px solid var(--accent); color:white; margin-top:20px;" onclick="location.reload()">New Cycle</button>
+    </div>
+</div>
+
+<script>
+    let navStack = [1];
+    let selectedItems = [];
+
+    function nextPage(n) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('p' + n).classList.add('active');
+        if(n !== navStack[navStack.length-1]) navStack.push(n);
+        document.getElementById('backBtn').style.display = n > 1 ? 'block' : 'none';
+    }
+
+    function prevPage() { if(navStack.length > 1) { navStack.pop(); nextPage(navStack[navStack.length-1]); } }
+
+    async function handleLogin() {
+        const e = document.getElementById('lEmail').value;
+        const p = document.getElementById('lPass').value;
+        if(!e || !p) return alert("Required: Login credentials missing.");
+        const resp = await fetch('/login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email:e, password:p}) });
+        const res = await resp.json();
+        if(res.status === "success") nextPage(6);
+        else alert("Unauthorized: " + res.message);
+    }
+
+    async function handleRegister() {
+        const n = document.getElementById('rName').value;
+        const e = document.getElementById('rEmail').value;
+        const p = document.getElementById('rPass').value;
+        if(!n || !e || !p) return alert("Required: Registration data incomplete.");
+        const resp = await fetch('/register', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({full_name:n, email:e, password:p}) });
+        const res = await resp.json();
+        if(res.status === "success") { alert("Profile Encrypted. Sign In now."); nextPage(3); }
+        else alert("Error: " + res.message);
+    }
+
+    function validateVitals() {
+        if(!document.getElementById('vH').value || !document.getElementById('vW').value || !document.getElementById('vA').value) return alert("Required: Vitals baseline missing.");
+        nextPage(7);
+    }
+
+    function validateSelectionAndNext(s, next) {
+        if(document.querySelectorAll(s).length === 0) return alert("Required: Select strategy.");
+        nextPage(next);
+    }
+
+    function toggleSel(el) { el.classList.toggle('selected'); }
+
+    const matrix = {
+        "Veg": ["Potato", "Tomato", "Onion", "Carrot", "Spinach", "Cabbage", "Cauliflower", "Cucumber", "Okra", "Peas"],
+        "Fruit": ["Apple", "Banana", "Mango", "Orange", "Grapes", "Watermelon", "Papaya", "Guava", "Pineapple", "Strawberry"],
+        "Dairy": ["Milk", "Curd", "Paneer", "Butter", "Ghee", "Cheese", "Buttermilk", "Cream"],
+        "Protein": ["Chicken", "Fish", "Eggs", "Mutton", "Prawns", "Beef", "Sausage"],
+        "Nuts": ["Almonds", "Cashews", "Walnuts", "Pistachios", "Pecans", "Hazelnuts", "Brazil nuts"]
+    };
+
+    const foodBox = document.getElementById('foodMatrix');
+    for (let cat in matrix) {
+        let div = document.createElement('div');
+        div.innerHTML = `<span class="cat-label">${cat}</span><div class="grid"></div>`;
+        matrix[cat].forEach(item => {
+            let card = document.createElement('div'); card.className = 'card'; card.innerText = item;
+            card.onclick = () => toggleSel(card);
+            div.querySelector('.grid').appendChild(card);
+        });
+        foodBox.appendChild(div);
+    }
+
+    function genDetailedRecipes() {
+        const sel = Array.from(document.querySelectorAll('#p8 .card.selected'));
+        if(sel.length < 2) return alert("Required: Select 2+ ingredients.");
+        selectedItems = sel.map(c => c.innerText);
+        const box = document.getElementById('recipeContainer'); box.innerHTML = "";
+        const m = selectedItems[0]; const s = selectedItems[1];
+        
+        const protocols = [
+            { t: "Alpha: Bio-Steam", p: [`Phase 1: Cube ${m} into 1cm units.`, `Phase 2: Steam for 8m. Add ${s} in final 60s.`, `Phase 3: Season with sea salt to lock minerals.`] },
+            { t: "Beta: Thermal Sear", p: [`Phase 1: Heat Ghee to 180°C.`, `Phase 2: Flash sear ${m} for 4m.`, `Phase 3: Fold in diced ${s} for crunch.`] },
+            { t: "Gamma: Power Mash", p: [`Phase 1: Boil ${m} until fiber softens.`, `Phase 2: Manually blend with ${s}.`, `Phase 3: Top with crushed nuts from inventory.`] }
+        ];
+
+        protocols.forEach(rec => {
+            let html = `<div class="recipe-box"><div style="color:var(--neon); font-weight:800; margin-bottom:10px;">${rec.t}</div>`;
+            rec.p.forEach(step => html += `<p style="font-size:0.75rem; color:#94a3b8; margin:5px 0;">${step}</p>`);
+            box.innerHTML += html + `</div>`;
+        });
+        nextPage(9);
+    }
+
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            const r = new FileReader();
+            r.onload = (e) => {
+                document.getElementById('pImg').src = e.target.result;
+                document.getElementById('pImg').style.display = 'block';
+                document.getElementById('cIcon').style.display = 'none';
+                document.getElementById('sLine').style.display = 'block';
+                document.getElementById('aBtn').disabled = false;
+                document.getElementById('aBtn').style.opacity = '1';
+            }
+            r.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function startAnalysis() {
+        nextPage(11);
+        const count = selectedItems.length;
+        document.getElementById('rCal').innerText = (count * 168) + " kcal";
+        document.getElementById('rPro').innerText = (count * 13) + " g";
+        document.getElementById('rFat').innerText = (count * 6) + " g";
+        document.getElementById('rCarb').innerText = (count * 21) + " g";
+    }
+</script>
+</body>
+</html>
